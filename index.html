@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html ng-app>
+<html ng-app="myApp">
 <head>
 <title>Rss Reader</title>
     <!-- Bootstrap -->
@@ -50,6 +50,8 @@ padding: 9px 0;
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/jquery-ui-1.10.0.custom.min.js"></script>
     <script src="js/angular.min.js"></script>
+    <script src="js/angular-sanitize.min.js"></script>
+    
     <script src="feeds.js"></script>
     
 <!--使用FeedsController-->
@@ -87,15 +89,15 @@ padding: 9px 0;
  
 <!-- Nav list Stared -->
 <div class="span2">
-<div class="row-fluid">
-  <table class="table table-striped" >
+<div class="row-fluid" >
+  <table class="table table-striped">
   <thead>
     <th>标题</th>
   </thead>
  <input type="text" ng-model="search" class="search-query" placeholder="搜索....">
   <tbody>
-    <tr ng-repeat="feed in feeds">
-      <td ><a ng-click='loadFeed(feed.xmlurl)'>{{feed.title}}</a></td>
+    <tr ng-repeat="(xmlurl,title) in feeds | filter:search">
+      <td><a href="#" ng-click='loadFeed(xmlurl)'>{{title}}</a><span class="badge">{{feedunreaded[xmlurl]}}</span></td>
     </tr> 
   </tbody>  
 </table> 
@@ -106,16 +108,19 @@ padding: 9px 0;
 <!-- Main content Stared-->
 <div class="span10">
     <div class="row-fluid">
-  <table class="table table-striped" >
-  <thead>
-    <th>标题</th>
-  </thead>
-  <tbody>
-
-    <tr ng-repeat="item in content.rss.channel[0].item">
-      <td >{{item.title[0]}}</td>
-    </tr> 
-  </tbody> 
+<div class="accordion" id="accordion2">
+  <div class="accordion-group" ng-repeat="(idx,title) in content.index">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse_{{idx}}">
+        标题：{{title}}
+      </a>
+    </div>
+    <div id="collapse_{{idx}}" class="accordion-body collapse">
+      <div class="accordion-inner" ng-bind-html="content[title].description[0]">
+      </div>
+    </div>
+  </div>
+</div><!-- End of accordion-->
     <div><!-- row-fluid END-->
 </div><!-- span10 END-->
 
