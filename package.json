@@ -1,0 +1,27 @@
+{
+"name": "priv_rss",
+  "author": "lemonhall <lemonhall@gmail.com>",
+  "description": "Priv rss reader just for me....",
+  "version": "0.0.1",
+  "homepage": "https://github.com/lemonhall/priv_rss",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lemonhall/priv_rss.git"
+  },
+  "bugs": {
+    "url": "http://github.com/lemonhall/priv_rss/issues"
+  },
+  "keywords": ["rss", "feed", "express", "reader"],
+  "main": "./server.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {
+    "feedparser": "0.13.x",
+    "opmlparser": "0.4.x",
+    "express"	: ">=3.1.x",
+    "request"	: "2.9.x",
+    "xml2js"	: ">=0.2.6"
+  },
+  "devDependencies": {}
+}

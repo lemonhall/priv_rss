@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html ng-app>
+<head>
+<title>Rss Reader</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link type="text/css" href="css/custom-theme/jquery-ui-1.10.0.custom.css" rel="stylesheet" />
+
+<style type="text/css">
+
+body {
+padding-top: 60px;
+padding-bottom: 40px;
+}
+.sidebar-nav {
+padding: 9px 0;
+}
+
+@media (max-width: 980px) {
+/* Enable use of floated navbar text */
+.navbar-text.pull-right {
+  float: none;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+}
+
+#myModal{
+
+	width:900px;
+	height: 800px;
+	margin:0px 0px 0px -450px;
+}
+#myModal .modal-body{
+
+	max-height: 900px;
+}
+#addTaskFrame{
+
+	margin-left: 10px;
+	margin-right: 10px;
+	width: 800px;
+	height: 700px;
+}
+</style>
+</head>
+
+<body>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.10.0.custom.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="feeds.js"></script>
+    
+<!--使用FeedsController-->
+<div ng-controller="FeedsCtrl">
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">我的阅读器</a>
+          <div class="nav-collapse collapse">
+            <p class="navbar-text pull-right" style="margin-right:5px;">
+              <a href="#" class="navbar-link" ng-click="Logout()">登出</a>
+            </p>
+            <p class="navbar-text pull-right" style="margin-right:5px;">
+              登录名:<a href="#" class="navbar-link">{{user}}</a>
+            </p>
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div><!--/.nav-collapse  这个Nav bar是ROOT下的了 -->
+
+<div class="container-fluid">
+<div class="row-fluid">
+
+ 
+<!-- Nav list Stared -->
+<div class="span2">
+<div class="row-fluid">
+  <table class="table table-striped" >
+  <thead>
+    <th>标题</th>
+  </thead>
+ <input type="text" ng-model="search" class="search-query" placeholder="搜索....">
+  <tbody>
+    <tr ng-repeat="feed in feeds">
+      <td ><a ng-click='loadFeed(feed.xmlurl)'>{{feed.title}}</a></td>
+    </tr> 
+  </tbody>  
+</table> 
+</div><!-- span2's row-fluid end -->
+</div><!-- span2 end -->
+<!-- Nav list End-->
+
+<!-- Main content Stared-->
+<div class="span10">
+    <div class="row-fluid">
+  <table class="table table-striped" >
+  <thead>
+    <th>标题</th>
+  </thead>
+  <tbody>
+
+    <tr ng-repeat="item in content.rss.channel[0].item">
+      <td >{{item.title[0]}}</td>
+    </tr> 
+  </tbody> 
+    <div><!-- row-fluid END-->
+</div><!-- span10 END-->
+
+
+
+
+
+</div><!-- row-fluid END-->
+</div><!--container-fluid END -->
+
+</div><!-- End of ng controller end-->
+</body>
+</html>
