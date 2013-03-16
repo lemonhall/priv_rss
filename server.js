@@ -22,87 +22,149 @@ app.use('/', express.static(__dirname + '/'));
 
 server.listen(8798);
 var root={};
+	//feeds表是维护待抓取的rss的url的一个列表....
+	//{
+	//		"xmlurl1":"title1",
+	//		"xmlurl2":"title2",
+	//}
+	//结构很简单：{feed.xmlurl:feed.title}
+	//TODO:加入抓取时间戳...失败次数等Meta信息....可能最好把user信息也加进去？
 	root.feeds={};
+
+	//rss表是维持抓取后内容的一个数据项
+	//{
+	//	"feed_url":{
+	//		
+	//		"title1":{
+	//				title:"....",
+	//				link:"xxxx",
+	//				description:".....",
+	//				time:"datatime"
+	//		},
+	//		"title2":{readed:true/false,title:"....",link:"xxxx",description:"....."}
+	//		}
+	//}
 	root.rss={};
+
+	//用户表.....
+	//{
+	//		"user_name":{
+	//					feeds:["url1","url2"],//用户所订阅的url的列表
+	//					unreaded:{
+	//						unreaded_title:["title1","title2"],
+	//						"url1":number,	
+	//						"url2":number
+	//					}
+	//		}
+	//}
+	root.user={};
+
+	//我自己咯，测试用户.....
+	var lemonhall={
+		"lemonhall2012@qq.com":{
+						feeds:{
+								"http://www.36kr.com/feed":"36氪 | 关注互联网创业",
+								"http://cn.engadget.com/rss.xml":"Engadget 瘾科技"
+							  }
+		}
+	};
+
+	root.user=lemonhall;
+	
+	//这是单独建立的一个表
+	//{
+	//		"url1":number,
+	//		"url2":number
+	//}
 	root.unreaded={};
+
+var initRss=function(result,parse_url){
+if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.channel[0].item&&result.rss.channel[0].item[0].title){
+
+		root.rss[parse_url]={};
+		var ptr=root.rss[parse_url];
+		ptr.index=[];
+		console.log("==========================");
+		console.log(result.rss.channel[0].title);
+		var unreaded_counter=0;
+
+		//遍历开始
+		result.rss.channel[0].item.forEach(function(item){
+
+			//规范化RSS的内容，不需要的字段不储存。。
+			var my_rss={};
+			my_rss.title=item.title;
+			my_rss.link=item.link;
+				if(item['content:encoded']){
+				my_rss.description=item['content:encoded'];
+			}else{
+				my_rss.description=item.description;
+			}
+			ptr[item.title[0]]=my_rss;
+			ptr[item.title[0]].readed=false;
+			console.log(item.title);
+		//first time use push is wright way.........but when new coming....need some 
+		//trick...to handle...
+			ptr.index.push(item.title[0]);
+			unreaded_counter++;
+	    });//end of 循环遍历RSS内容
+	    	
+	    	root.unreaded[parse_url]=unreaded_counter;
+  }//强判断条件的结尾......必须存在rss/rss.channel/rss.channel[0].item
+
+};//End of init an rss....
+
+var addtoExistRss=function(ptr,result,parse_url){
+if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.channel[0].item&&result.rss.channel[0].item[0].title){
+    var item_length=result.rss.channel[0].item.length;
+    //这里使用for循环倒序扫描新取到的rss项目，按照先后顺序unshift到列表的头部去
+    for(item_itor=item_length-1;item_itor>=0;item_itor--){
+        var tt=result.rss.channel[0].item[item_itor];
+            if(tt){
+	    	//如果存在该条目，什么也别做.....
+	    		if(ptr[tt.title[0]]){
+
+	    		}else{
+				console.log("=========New item added=================");
+                console.log(result.rss.channel[0].title);
+				console.log(tt.title);
+
+					//规范化RSS的内容，需要重构....
+                    var my_rss={};
+                    my_rss.title=tt.title;
+                              my_rss.link=tt.link;
+                    if(tt['content:encoded']){
+                            my_rss.description=tt['content:encoded'];
+                    }else{
+                            my_rss.description=tt.description;
+                    }
+	
+					ptr[tt.title[0]]=my_rss;
+					ptr[tt.title[0]].readed=false;	    					
+					ptr.index.unshift(tt.title[0]);
+					root.unreaded[parse_url]=root.unreaded[parse_url]+1;
+				}//end of 如果存在该条目的else分支...
+			}//end of tt exist?
+	  }//end of foreach rss items.....
+}//End of 强内容判断if句
+};//End of add to ExistRss...
 
 var onParse=function(err,result,url1){
 	var parse_url=url1;
 	console.log("i am in onParse...closure..."+parse_url);
 		if(!err){
-			
-	    	var ptr=root.rss[parse_url];
+		var ptr=root.rss[parse_url];
 	    	//取内存里的值，如果存在，则开始建立索引以及其余的东西，如果不存在则需要初始化...
-	    	if(ptr&&result.rss&&result.rss.channel&&result.rss.channel[0].item){
-	    		
-                                var item_length=result.rss.channel[0].item.length;
-
-                                for(item_itor=item_length-1;item_itor>=0;item_itor--){
-                                        var tt=result.rss.channel[0].item[item_itor];
-                                        if(tt){
-	    					//如果存在该条目，什么也别做.....
-	    					if(ptr[tt.title[0]]){
-
-	    					}else{
-							console.log("=========New item added=================");
-                                			console.log(result.rss.channel[0].title);
-							console.log(tt.title);
-
-					//规范化RSS的内容，需要重构....
-                                        var my_rss={};
-                                        my_rss.title=tt.title;
-					                              my_rss.link=tt.link;
-                                        if(tt['content:encoded']){
-                                                my_rss.description=tt['content:encoded'];
-                                        }else{
-                                                my_rss.description=tt.description;
-                                        }
-	
-							ptr[tt.title[0]]=my_rss;
-	    						ptr[tt.title[0]].readed=false;	    					
-	    						ptr.index.unshift(tt.title[0]);
-	    						root.unreaded[parse_url]=root.unreaded[parse_url]+1;
-	    					}//end of ptr exist?
-					}//end of tt exist?
-	    			}//end of foreach rss items.....
+	    	if(ptr){
+	    		addtoExistRss(ptr,result,parse_url);
 	    	}else{//如果不存在则建立该url的数据内容....
-if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.channel[0].item&&result.rss.channel[0].item[0].title){
-
-		    		root.rss[parse_url]={};
-		    		ptr=root.rss[parse_url];
-		    		ptr.index=[];
-		    		console.log("==========================");
-		     		console.log(result.rss.channel[0].title);
-		     		var unreaded_counter=0;
-		   			result.rss.channel[0].item.forEach(function(item){
-
-					//规范化RSS的内容，不需要的字段不储存。。
-					var my_rss={};
-					my_rss.title=item.title;
-					my_rss.link=item.link;
-          if(item['content:encoded']){
-						my_rss.description=item['content:encoded'];
-					}else{
-						my_rss.description=item.description;
-					}
-
-
-	    				ptr[item.title[0]]=my_rss;
-	    				ptr[item.title[0]].readed=false;
-	    				console.log(item.title);
-					//first time use push is wright way.........but when new coming....need some 
-					//trick...to handle...
-	    				ptr.index.push(item.title[0]);
-	    				unreaded_counter++;
-	    			});
-	    			root.unreaded[parse_url]=unreaded_counter;
-    			}//强判断条件的结尾......必须存在rss/rss.channel/rss.channel[0].item
+	    		initRss(result,parse_url);
 	    	}//End of判断数据库中是否存在该条目内容的判断表达式的结束41行左右
 	    }//if err?
 	    else{
 	    	console.log(err);
 	    }
-}//end of onParse
+};//end of onParse
 
 //自动抓取RSS地址的函数
 function syncFeeds(url_list){
@@ -140,12 +202,21 @@ setInterval(function(){
 
 
 //给客户端返回所有的feeds列表....
-app.get('/feeds', function (req, res) {
-  res.send(JSON.stringify(root.feeds));
-});
+//TODO:这里需要改造成多用户的系统....
+app.post('/feeds', function (req, res) {
+  var username=req.body.username;
+  //这里需要加强验证逻辑
+  if(username){
+  		res.send(JSON.stringify(root.user[username]));
+	}else{
+		var re={error:"错误：没有该用户"};
+  		res.send(re);
+   }
+});//End of取得某用户订阅了的Rss的列表......
 
 
 //给客户端返回所有的feeds的已读以及未读情况
+//TODO:这里也需要改成多用户的...
 app.get('/feedunreaded', function (req, res) {
   res.send(JSON.stringify(root.unreaded));
 });
@@ -209,6 +280,7 @@ function gotOpml (error, meta, feeds, outline){
     });
   }
 }//读取opml文件的例程，这段程序倒是很少出错.....
+
 //读入根目录下的OPML文件
 opmlparser.parseStream(fs.createReadStream('./subscriptions.xml'),gotOpml);
 
