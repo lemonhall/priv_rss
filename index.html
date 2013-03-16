@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html ng-app="myApp">
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="myApp">
 <head>
 <title>Rss Reader</title>
     <!-- Bootstrap -->
@@ -8,9 +8,19 @@
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
 <style type="text/css">
 
+body{
+  overflow: hidden;
+}
+
 .main {
 	padding-top:60px;
 	padding-bottom: 40px;
+}
+
+.test {
+  max-height:600px;
+  overflow: hidden;
+  overflow-y: auto;
 }
 .sidebar-nav {
 	padding: 9px 0;
@@ -67,7 +77,7 @@
  
 <!-- Nav list Stared -->
 <div class="span2">
-  <div class="row-fluid" >
+  <div class="row-fluid test" >
 
   <table class="table table-striped">
   <thead>
@@ -86,7 +96,7 @@
 
 <!-- Main content Stared-->
 <div class="span10">
-<div class="row-fluid" id="mainRight">
+<div class="row-fluid test" id="mainRight">
 <div class="LasestNews" ng-bind-html="mainRight">
 </div>
 <!--End of mainRight-->

@@ -1,18 +1,9 @@
-[ERROR] 15:04:48 Error
-Error: Unmatched closing tag: p
-Line: 6
-Column: 8
-Char: >
-    at error (/Users/lemonhall/priv_rss/node_modules/xml2js/node_modules/sax/lib/sax.js:352:8)
-    at strictFail (/Users/lemonhall/priv_rss/node_modules/xml2js/node_modules/sax/lib/sax.js:369:22)
-    at closeTag (/Users/lemonhall/priv_rss/node_modules/xml2js/node_modules/sax/lib/sax.js:537:5)
-    at Object.write (/Users/lemonhall/priv_rss/node_modules/xml2js/node_modules/sax/lib/sax.js:958:29)
-    at Parser.exports.Parser.Parser.parseString (/Users/lemonhall/priv_rss/node_modules/xml2js/lib/xml2js.js:257:29)
-    at Parser.parseString (/Users/lemonhall/priv_rss/node_modules/xml2js/lib/xml2js.js:6:61)
-    at exports.parseString (/Users/lemonhall/priv_rss/node_modules/xml2js/lib/xml2js.js:280:19)
-    at Request._callback (/Users/lemonhall/priv_rss/server.js:38:6)
-    at Request.self.callback (/Users/lemonhall/priv_rss/node_modules/request/main.js:120:22)
-    at Request.EventEmitter.emit (events.js:98:17)
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+    <head>
+        <title>Google 阅读器中 LemonHall 的订阅</title>
+    </head>
+    <body>
 
 <outline text="K.I.S.S. - 简单哲学" title="K.I.S.S. - 简单哲学"
     type="rss" xmlUrl="http://www.kissuki.com/feed/" htmlUrl="http://iven.github.com/"/>
@@ -76,8 +67,7 @@ Char: >
         <outline text="Blog of Kristian Trenskow"
             title="Blog of Kristian Trenskow" type="rss"
             xmlUrl="http://trenskow.com/feed/" htmlUrl="http://trenskow.com"/>
-
-        <outline text="Caolan McMahon" title="Caolan McMahon" type="rss"
+  <outline text="Caolan McMahon" title="Caolan McMahon" type="rss"
             xmlUrl="http://feeds.feedburner.com/caolan" htmlUrl="http://www.caolanmcmahon.com"/>
         <outline text="旅游卫视行者的小院儿" title="旅游卫视行者的小院儿" type="rss"
             xmlUrl="http://walkertctc.blog.sohu.com/rss" htmlUrl="http://walkertctc.blog.sohu.com/"/>
@@ -100,3 +90,6 @@ Char: >
             xmlUrl="http://feeds.feedburner.com/RayWenderlich" htmlUrl="http://www.raywenderlich.com"/>
         <outline text="Resys China" title="Resys China" type="rss"
             xmlUrl="http://www.resyschina.com/feed" htmlUrl="http://www.resyschina.com"/>
+
+     </body>
+</opml>

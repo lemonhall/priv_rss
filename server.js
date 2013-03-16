@@ -209,7 +209,6 @@ function gotOpml (error, meta, feeds, outline){
     });
   }
 }//读取opml文件的例程，这段程序倒是很少出错.....
-
 //读入根目录下的OPML文件
 opmlparser.parseStream(fs.createReadStream('./subscriptions.xml'),gotOpml);
 
