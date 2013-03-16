@@ -3,6 +3,7 @@ angular.module('myApp', ['ngSanitize']);
 function FeedsCtrl($scope,$http) { 
 
   $scope.rss_content={};
+  $scope.mainRight="<div class='hero-unit'><h1>Hello, world!</h1><p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p><p><a href='#' class='btn btn-primary btn-large'>Learn more &raquo;</a></p></div>";
 
   var updatePages=function(){
       $http.get('/feeds').success(function(data) {
@@ -16,12 +17,37 @@ function FeedsCtrl($scope,$http) {
       console.log(xmlurl);
       $http.post('/feedcontent',{xmlurl:xmlurl}).success(function(data) {
               $scope.content = data;
-      });//end of update $scope.feeds;
+      });
+      
+      $scope.mainRight="";
+      //end of update $scope.feeds;
       // $http.get(xmlurl).success(function(data) {
       //           $scope.feeds = data;
       // });//end of update $scope.feeds;
   };
 
+
+  $scope.share_douban=function(title){
+	var url=$scope.content[title].link[0];
+	//var img_url=findUrlInDescripetion();
+	
+	if(url&&title){
+		var r='http://shuo.douban.com/!service/share?image=&href='+
+		      encodeURIComponent(url)+
+                      '&name='+encodeURIComponent(title);
+		window.open(r);
+	}
+
+  }//End of share to douban...
+
+  $scope.share_weibo=function(title){
+	var url=$scope.content[title].link[0];
+	if(url&&title){
+		var r='http://service.weibo.com/share/share.php?title='+
+		    title+'&url='+url+'&source=bookmark&appkey=2992571369';
+		window.open(r);
+	}
+ }//End of share to weibo
   //查看内容并标记该条目为已读
   $scope.expand = function(title) {
               //console.log($scope.content[title].description[0]);

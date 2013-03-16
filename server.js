@@ -20,7 +20,7 @@ app.get('/server.js',function(req,res){
 
 app.use('/', express.static(__dirname + '/'));
 
-server.listen(8799);
+server.listen(8798);
 var root={};
 	root.feeds={};
 	root.rss={};
@@ -34,19 +34,40 @@ var onParse=function(err,result,url1){
 	    	var ptr=root.rss[parse_url];
 	    	//取内存里的值，如果存在，则开始建立索引以及其余的东西，如果不存在则需要初始化...
 	    	if(ptr&&result.rss&&result.rss.channel&&result.rss.channel[0].item){
-	    			result.rss.channel[0].item.forEach(function(item){
-	    				//如果存在该条目，什么也别做.....
-	    				if(ptr[item.title[0]]){
+	    		
+                                var item_length=result.rss.channel[0].item.length;
 
-	    				}else{
-	    					ptr[item.title[0]]=item;
-	    					ptr[item.title[0]].readed=false;	    					
-	    					ptr.index.push(item.title[0]);
-	    					root.unreaded[parse_url]=root.unreaded[parse_url]+1;
-	    				}
-	    			});//end of foreach rss items.....
+                                for(item_itor=item_length-1;item_itor>=0;item_itor--){
+                                        var tt=result.rss.channel[0].item[item_itor];
+                                        if(tt){
+	    					//如果存在该条目，什么也别做.....
+	    					if(ptr[tt.title[0]]){
+
+	    					}else{
+							console.log("=========New item added=================");
+                                			console.log(result.rss.channel[0].title);
+							console.log(tt.title);
+
+					//规范化RSS的内容，需要重构....
+                                        var my_rss={};
+                                        my_rss.title=tt.title;
+					my_rss.link=tt.link;
+                                        if(tt['content:encoded']){
+                                                my_rss.description=tt['content:encoded'];
+                                        }else{
+                                                my_rss.description=tt.description;
+                                        }
+	
+							ptr[tt.title[0]]=my_rss;
+	    						ptr[tt.title[0]].readed=false;	    					
+	    						ptr.index.unshift(tt.title[0]);
+	    						root.unreaded[parse_url]=root.unreaded[parse_url]+1;
+	    					}//end of ptr exist?
+					}//end of tt exist?
+	    			}//end of foreach rss items.....
 	    	}else{//如果不存在则建立该url的数据内容....
-	    		if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.channel[0].item&&result.rss.channel[0].item[0].title){
+if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.channel[0].item&&result.rss.channel[0].item[0].title){
+
 		    		root.rss[parse_url]={};
 		    		ptr=root.rss[parse_url];
 		    		ptr.index=[];
@@ -54,9 +75,24 @@ var onParse=function(err,result,url1){
 		     		console.log(result.rss.channel[0].title);
 		     		var unreaded_counter=0;
 		   			result.rss.channel[0].item.forEach(function(item){
-	    				ptr[item.title[0]]=item;
+
+					//规范化RSS的内容，不需要的字段不储存。。
+					var my_rss={};
+					my_rss.title=item.title;
+					my_rss.link=item.link;
+					
+          if(item['content:encoded']){
+						my_rss.description=item['content:encoded'];
+					}else{
+						my_rss.description=item.description;
+					}
+
+
+	    				ptr[item.title[0]]=my_rss;
 	    				ptr[item.title[0]].readed=false;
 	    				console.log(item.title);
+					//first time use push is wright way.........but when new coming....need some 
+					//trick...to handle...
 	    				ptr.index.push(item.title[0]);
 	    				unreaded_counter++;
 	    			});
@@ -73,21 +109,21 @@ var onParse=function(err,result,url1){
 function syncFeeds(url_list){
 	url_list.forEach(function(url1){
 		//fetch_feed(feed.xmlurl);
-			request(url1, function (error, response, body) {
-						  if (!error && response.statusCode == 200) {
-						    //console.log(body) // Print the google web page.
-						    console.log("i am getting....:"+url1);
-						    var checkbody=typeof body;
-							    if(checkbody==="string"){
-							    	xml2js_parser(body,function(err,result){
-							    		onParse(err,result,url1);
-							    	});
-								}//end of判断body是否为string的判断句
-								else{
-									console.log("body is not a string ....");
-								}
-						  }//end of statusCode==200
-			});//End of request
+		request(url1, function (error, response, body) {
+			if (!error && response.statusCode == 200) {
+			    //console.log(body) // Print the google web page.
+			    console.log("i am getting....:"+url1);
+			    var checkbody=typeof body;
+			    if(checkbody==="string"){
+				    	xml2js_parser(body,function(err,result){
+				    		onParse(err,result,url1);
+				    	});
+			    }//end of判断body是否为string的判断句
+			    else{
+					console.log("body is not a string ....");
+			    }//end of body is string?????
+			}//end of statusCode==200
+		});//End of request
 	});//End of forEach(url in root.feeds)
 }//End of sync function...
 
@@ -116,12 +152,15 @@ app.get('/feedunreaded', function (req, res) {
 });
 
 //给客户端返回所有的feeds列表....
+//需要加入缓存逻辑，加上时间戳.....
+//入口参数要加上一个本地缓存版本的时间戳，和服务器上的时间戳对比
+//如果一致，就不返回数据了，节省流量.....
 app.post('/feedcontent', function (req, res) {
   var xmlurl=req.body.xmlurl;
   console.log(xmlurl);
   
   if(root.rss[xmlurl]){
-  	res.send(root.rss[xmlurl]);
+  	res.send(JSON.stringify(root.rss[xmlurl]));
   }else{
 	var re={error:"错误：内存中无该条目"};
   	res.send(re);
@@ -184,4 +223,4 @@ setTimeout(function(){
 	  }//End of vaild xmlurl	
 	}
 	syncFeeds(url_list);
-},1000*10);
+},1000*3);

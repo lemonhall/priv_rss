@@ -4,43 +4,29 @@
 <title>Rss Reader</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <link type="text/css" href="css/custom-theme/jquery-ui-1.10.0.custom.css" rel="stylesheet" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
 <style type="text/css">
 
-body {
-padding-top: 60px;
-padding-bottom: 40px;
+.main {
+	padding-top:60px;
+	padding-bottom: 40px;
 }
 .sidebar-nav {
-padding: 9px 0;
+	padding: 9px 0;
 }
 
 @media (max-width: 980px) {
 /* Enable use of floated navbar text */
+.main{
+	padding-top:0px;
+
+}
 .navbar-text.pull-right {
   float: none;
   padding-left: 5px;
   padding-right: 5px;
-}
-}
-
-#myModal{
-
-	width:900px;
-	height: 800px;
-	margin:0px 0px 0px -450px;
-}
-#myModal .modal-body{
-
-	max-height: 900px;
-}
-#addTaskFrame{
-
-	margin-left: 10px;
-	margin-right: 10px;
-	width: 800px;
-	height: 700px;
+ }
 }
 </style>
 </head>
@@ -48,7 +34,6 @@ padding: 9px 0;
 <body>
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.10.0.custom.min.js"></script>
     <script src="js/angular.min.js"></script>
     <script src="js/angular-sanitize.min.js"></script>
     
@@ -67,12 +52,6 @@ padding: 9px 0;
           </button>
           <a class="brand" href="#">我的阅读器</a>
           <div class="nav-collapse collapse">
-            <p class="navbar-text pull-right" style="margin-right:5px;">
-              <a href="#" class="navbar-link" ng-click="Logout()">登出</a>
-            </p>
-            <p class="navbar-text pull-right" style="margin-right:5px;">
-              登录名:<a href="#" class="navbar-link">{{user}}</a>
-            </p>
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
               <li><a href="#about">About</a></li>
@@ -83,13 +62,13 @@ padding: 9px 0;
       </div>
     </div><!--/.nav-collapse  这个Nav bar是ROOT下的了 -->
 
-<div class="container-fluid">
+<div class="container-fluid main">
 <div class="row-fluid">
-
  
 <!-- Nav list Stared -->
 <div class="span2">
-<div class="row-fluid" >
+  <div class="row-fluid" >
+
   <table class="table table-striped">
   <thead>
     <th>标题</th>
@@ -107,21 +86,39 @@ padding: 9px 0;
 
 <!-- Main content Stared-->
 <div class="span10">
-    <div class="row-fluid">
+<div class="row-fluid" id="mainRight">
+<div class="LasestNews" ng-bind-html="mainRight">
+</div>
+<!--End of mainRight-->
 <div class="accordion" id="accordion2">
   <div class="accordion-group" ng-repeat="(idx,title) in content.index">
+    
+    <!--Begin of accordion-heading-->
     <div class="accordion-heading">
       <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse_{{idx}}">
-        标题：{{title}}
+       <span>标题：{{title}}</span>
       </a>
     </div>
-    <div id="collapse_{{idx}}" class="accordion-body collapse">
-      <div class="accordion-inner" ng-bind-html="content[title].description[0]">
-      </div>
+    <!--End of according heading-->
+
+	<!--Begin of according body-->
+        <div id="collapse_{{idx}}" class="accordion-body collapse">
+      		<div class="accordion-inner" ng-bind-html="content[title].description[0]"></div>
+    		<!--Begin of reshare-->
+		<div class="text-right" style="margin-right:10px;margin-bottom:10px;">
+			<a href="#"  ng-click="share_douban(title)">推荐到豆瓣</a>
+			<a href="#"  ng-click="share_weibo(title)">推荐到新浪</a>
+		</div>
+		<!--End of reshare-->
+	</div>
+        <!-- End of collapse body-->
     </div>
+	<!-- End of according...group-->
   </div>
 </div><!-- End of accordion-->
-    <div><!-- row-fluid END-->
+
+
+   <div><!-- row-fluid END-->
 </div><!-- span10 END-->
 
 
@@ -132,5 +129,15 @@ padding: 9px 0;
 </div><!--container-fluid END -->
 
 </div><!-- End of ng controller end-->
+<script type="text/javascript">
+	
+	$(document).ready(function(){
+		var mainRight=$("#mainRight");
+		console.log(mainRight);
+	});
+
+
+
+</script>
 </body>
 </html>
