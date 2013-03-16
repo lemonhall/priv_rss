@@ -343,3 +343,88 @@ setTimeout(function(){
 	}
 	syncFeeds(url_list);
 },1000*3);
+
+//====================================================================
+//豆瓣登陆处理逻辑....
+app.get('/callback/',function(req,res){
+         console.log(req.query);
+         res.send(JSON.stringify(req.query));
+         //var code=JSON.parse(req.query);
+         console.log(req.query.code);
+if(req.query.error){
+    	res.reditect("/");
+}//End of has a req.query.error??
+
+
+if(req.query.code){
+    	var data={
+			client_id		: '0bc6b936fe5d77e123542ba4fb1867a3',
+			client_secret	: '96ce1dffac124fe8',
+			redirect_uri	: 'http://test.wukong.com/callback',
+ 			grant_type		: 'authorization_code',
+ 			code 			:  req.query.code
+		};
+request.post('https://www.douban.com/service/auth2/token',{form:data}, function (e, r, body) {
+var err_message={
+		100:'invalid_request_scheme 错误的请求协议',
+		101:'invalid_request_method 错误的请求方法',
+		102:'access_token_is_missing 未找到access_token',
+		103:'invalid_access_token access_token不存在或已被用户删除',
+		104:'invalid_apikey apikey不存在或已删除',
+		105:'apikey_is_blocked apikey已被禁用',
+		106:'access_token_has_expired access_token已过期',
+		107:'invalid_request_uri 请求地址未注册',
+		108:'invalid_credencial1 用户未授权访问此数据',
+		109:'invalid_credencial2 apikey未申请此权限',
+		110:'not_trial_user 未注册的测试用户',
+		111:'rate_limit_exceeded1 用户访问速度限制',
+		112:'rate_limit_exceeded2 IP访问速度限制',
+		113:'required_parameter_is_missing 缺少参数',
+		114:'unsupported_grant_type 错误的grant_type',
+		115:'unsupported_response_type 错误的response_type',
+		116:'client_secret_mismatch client_secret不匹配',
+		117:'redirect_uri_mismatch redirect_uri不匹配',
+		118:'invalid_authorization_code authorization_code不存在或已过期',
+		119:'invalid_refresh_token refresh_token不存在或已过期',
+		120:'username_password_mismatch 用户名密码不匹配',
+		121:'invalid_user 用户不存在或已删除',
+		122:'user_has_blocked 用户已被屏蔽',
+		123:'access_token_has_expired_since_password_changed 因用户修改密码而导致access_token过期',
+		124:'access_token_has_not_expired access_token未过期',
+		125:'invalid_request_scope 访问的scope不合法，开发者不用太关注，一般不会出现该错误',
+		999:'unknown 未知错误'
+};//End of error code table...
+
+	var body_jObject=JSON.parse(body);
+	//如果是有code则多半意味着失败了，则打印错误代码
+	//console.log(body_jObject);
+	if(body_jObject.code){
+		var code=body_jObject.code;
+		console.log(err_message[code]);
+	}else{
+		//如果成功，则返回该用户的字符串
+		// {"access_token":"$!@#$!@#$!@#$!@#",
+		// "douban_user_name":"柠檬",
+		// "douban_user_id":"55895127",
+		// "expires_in":604800,
+		// "refresh_token":"%!@#%!@!@#%!@%!%!@#%"}
+          if(body_jObject.access_token){
+ 			var access_token=body_jObject.access_token;
+                  console.log(access_token);
+            var header={'Authorization':'Bearer '+access_token};
+            request.get('https://api.douban.com/v2/user/~me',{headers:header},
+            function (e, r, body) {
+            	if(!e){
+                    console.log(body);
+                    res.send(body);
+                }else{
+                	res.reditect("/");
+                }
+            });//end of get user's profile which is a priv API -->
+	}//End of has a code?   if(body_jObject.code){
+});//End of request.post('https://www.douban.com/service/auth2/token'
+   //用code开始去换access_token去了.......		
+
+    }//End of if(req.query.code) Exist...
+
+});//End of app.get("/callback/")
