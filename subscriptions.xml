@@ -11,9 +11,9 @@
         <outline text="Linux Toy" title="Linux Toy" type="rss"
                 xmlUrl="http://linuxtoy.org/feed/" htmlUrl="http://linuxtoy.org"/>
         <outline text="小众软件" title="小众软件" type="rss"
-                            xmlUrl="http://feed.appinn.com/" htmlUrl="http://www.appinn.com"/>
+                xmlUrl="http://feed.appinn.com/" htmlUrl="http://www.appinn.com"/>
 	      <outline text="solidot" title="Solidot" type="rss"
-			   xmlUrl="http://solidot.org.feedsportal.com/c/33236/f/556826/index.rss" htmlUrl="http://solidot.org"/>
+			          xmlUrl="http://solidot.org.feedsportal.com/c/33236/f/556826/index.rss" htmlUrl="http://solidot.org"/>
        <outline text="K.I.S.S. - 简单哲学" title="K.I.S.S. - 简单哲学"
              type="rss" xmlUrl="http://www.kissuki.com/feed/" htmlUrl="http://iven.github.com/"/>
      

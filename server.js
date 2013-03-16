@@ -51,7 +51,7 @@ var onParse=function(err,result,url1){
 					//规范化RSS的内容，需要重构....
                                         var my_rss={};
                                         my_rss.title=tt.title;
-					my_rss.link=tt.link;
+					                              my_rss.link=tt.link;
                                         if(tt['content:encoded']){
                                                 my_rss.description=tt['content:encoded'];
                                         }else{
@@ -80,7 +80,6 @@ if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.cha
 					var my_rss={};
 					my_rss.title=item.title;
 					my_rss.link=item.link;
-					
           if(item['content:encoded']){
 						my_rss.description=item['content:encoded'];
 					}else{
