@@ -3,6 +3,8 @@ angular.module('myApp', ['ngSanitize']);
 function FeedsCtrl($scope,$http) { 
 
   $scope.rss_content={};
+  $scope.feedNeedbeAdded="";
+
   $scope.mainRight="<div class='hero-unit'><h1>Hello, world!</h1><p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p><p><a href='#' class='btn btn-primary btn-large'>Learn more &raquo;</a></p></div>";
 
   var updatePages=function(){
@@ -22,6 +24,30 @@ function FeedsCtrl($scope,$http) {
           }
       });//end of update $scope.feeds;
   };//End of 初始化页面.......
+
+  //给当前用户加一个feed地址.....
+  $scope.addFeed=function(){
+      var url=$scope.feedNeedbeAdded;
+      var username="lemonhall2012@qq.com";
+
+      if(url&&username){
+          $http.post('/addFeed',{username:username,xmlurl:url})
+          .success(function(data) {
+              //$scope.content = data;
+                    if(data.feeds){
+                          //更新用户的订阅列表....并清零订阅INPUT BOX....
+                          //并马上载入该订阅.........
+                          $scope.feeds = data.feeds;
+                          $scope.feedNeedbeAdded="";
+                          $scope.loadFeed(url);
+                    }
+          });
+      }else{
+
+      }
+  }//End of 加一个订阅地址....
+
+
 
   //载入feed
   //http://stackoverflow.com/questions/9381926/insert-html-into-view-using-angularjs

@@ -79,14 +79,19 @@ body{
 <div class="span2">
   <div class="row-fluid test" >
 
-  <table class="table table-striped">
-  <thead>
-    <th>标题</th>
-  </thead>
- <input type="text" ng-model="search" class="search-query" placeholder="搜索....">
+<table class="table table-striped">
+<div class="control-group">
+  <div class="controls">
+    <div class="input-prepend">
+      <span class="add-on" ng-click='addFeed()'><i class="icon-plus"></i></span>
+      <input class="span11" id="inputIcon" type="text" ng-model="feedNeedbeAdded" placeholder="订阅地址....">
+    </div>
+  </div>
+</div>
   <tbody>
-    <tr ng-repeat="(xmlurl,title) in feeds | filter:search">
-      <td><a href="#content" ng-click='loadFeed(xmlurl)'>{{title}}</a><span class="badge">{{feedunreaded[xmlurl]}}</span></td>
+    <tr><td>主页....</td></tr>
+    <tr ng-repeat="(xmlurl,title) in feeds">
+      <td><a ng-click='loadFeed(xmlurl)'>{{title}}</a><span class="badge">{{feedunreaded[xmlurl]}}</span></td>
     </tr> 
   </tbody>  
 </table> 
@@ -104,7 +109,6 @@ body{
   <div class="accordion-group" ng-repeat="(idx,title) in content.index">
     
     <!--Begin of accordion-heading-->
-    <a name="content"></a>
     <div class="accordion-heading">
       <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse_{{idx}}">
        <span>标题：{{title}}</span>

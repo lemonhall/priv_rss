@@ -29,12 +29,14 @@ var root={};
 	//}
 	//结构很简单：{feed.xmlurl:feed.title}
 	//TODO:加入抓取时间戳...失败次数等Meta信息....可能最好把user信息也加进去？
+	//	   需要加一个引用技术系统，如果长时间没有用户订阅该URL，将其剔除
 	root.feeds={};
 
 	//rss表是维持抓取后内容的一个数据项
 	//{
 	//	"feed_url":{
-	//		
+	//		index:["title1","title2"],
+	//		title:"META的TITLE信息",
 	//		"title1":{
 	//				title:"....",
 	//				link:"xxxx",
@@ -70,7 +72,7 @@ var root={};
 	};
 
 	root.user=lemonhall;
-	
+
 	//这是单独建立的一个表
 	//{
 	//		"url1":number,
@@ -83,6 +85,11 @@ if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.cha
 
 		root.rss[parse_url]={};
 		var ptr=root.rss[parse_url];
+		//取得该条目的TITLE.....
+		if(result.rss.channel[0].title){
+			ptr.title=result.rss.channel[0].title[0];
+		}
+
 		ptr.index=[];
 		console.log("==========================");
 		console.log(result.rss.channel[0].title);
@@ -167,7 +174,7 @@ var onParse=function(err,result,url1){
 };//end of onParse
 
 //自动抓取RSS地址的函数
-function syncFeeds(url_list){
+function syncFeeds(url_list,callback){
 	url_list.forEach(function(url1){
 		//fetch_feed(feed.xmlurl);
 		request(url1, function (error, response, body) {
@@ -178,6 +185,9 @@ function syncFeeds(url_list){
 			    if(checkbody==="string"){
 				    	xml2js_parser(body,function(err,result){
 				    		onParse(err,result,url1);
+				    		if(callback){
+				    			callback();
+				    		}
 				    	});
 			    }//end of判断body是否为string的判断句
 			    else{
@@ -214,6 +224,45 @@ app.post('/feeds', function (req, res) {
    }
 });//End of取得某用户订阅了的Rss的列表......
 
+//给当前用户添加一个feed地址
+//In feeds.js
+//$http.post('/addFeed',{username:username,xmlurl:url})
+app.post('/addFeed', function (req, res) {
+	var username=req.body.username;
+	var xmlurl=req.body.xmlurl;
+	var re={};
+
+	if(username&&xmlurl){
+		var list=[];
+			list.push(xmlurl);
+		console.log("I got a address to add to user's sub.."+list);
+		if(root.rss[xmlurl]){
+				//如果内存里已有这个条目。。那么只需要将该url加入到用户的订阅列表内即可....
+			    console.log("I have the url in my memory...."+xmlurl);
+			    root.user[username].feeds[xmlurl]=root.rss[xmlurl].title;
+			    res.send(JSON.stringify(root.user[username]));
+		}else{
+			//1、成功取得RSS后，在root.feeds...列表里加入该条目...
+			//2、另外要在当前用户的订阅列表里加上该条目.....
+			syncFeeds(list,function(){
+				//1、将提交的URL添加用户的订阅列表里去....
+				//   因为是HASH TABLE的，所以自然是去重过了的....
+				//2、将该URL提交到全局抓取列表root.feeds里面去.....
+				//   正好也是去重过了的......
+				if(root.rss[xmlurl]){
+					root.user[username].feeds[xmlurl]=root.rss[xmlurl].title;
+					root.feeds[xmlurl]=root.rss[xmlurl].title;
+				}
+			    console.log("I got the right feed!!!"+xmlurl);
+			    res.send(JSON.stringify(root.user[username]));
+			});//End of 如果成功抓取并验证该地址可以取得合法的RSS的话....
+		}
+	}else{
+		re={error:"错误：没有该用户"};
+  		res.send(re);
+	}
+
+});//END of  给当前用户添加一个feed地址
 
 //给客户端返回所有的feeds的已读以及未读情况
 //TODO:这里也需要改成多用户的...
