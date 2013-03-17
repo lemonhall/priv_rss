@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" ng-app="myApp">
+<html ng-app>
 <head>
 <title>lemonReader-设置</title>
     <!-- Bootstrap -->
@@ -8,20 +8,11 @@
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
 <style type="text/css">
 
-body{
-  overflow: hidden;
-}
-
 .main {
 	padding-top:60px;
 	padding-bottom: 40px;
 }
 
-.test {
-  max-height:600px;
-  overflow: hidden;
-  overflow-y: auto;
-}
 .sidebar-nav {
 	padding: 9px 0;
 }
@@ -197,7 +188,7 @@ body{
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li class="active"><a href="/">Home</a></li>
-              <li><a href="/settings.html">Settings</a></li>
+              <li><a href="/setting.html">Settings</a></li>
               <li><a href="/help.html">Help</a></li>
               <li><a href="/contact.html">Contact</a></li>
             </ul>
@@ -209,16 +200,28 @@ body{
 <div class="container-fluid main">
 <div class="row-fluid">
 <div class="span12">
-<div class="fileupload fileupload-new" data-provides="fileupload">
+  <form id="opmlform" method="post" enctype="multipart/form-data">
+  <div class="fileupload fileupload-new" data-provides="fileupload">
   <div class="input-append">
-    <div class="uneditable-input span3"><i class="icon-file fileupload-exists"></i> <span class="fileupload-preview"></span></div><span class="btn btn-file"><span class="fileupload-new">选择opml文件...</span><span class="fileupload-exists">更改文件..</span><input type="file" /></span><a href="#" class="btn fileupload-exists" data-dismiss="fileupload">移除..</a>
+    <div class="uneditable-input span3">
+      <i class="icon-file fileupload-exists"></i>
+      <span class="fileupload-preview"></span>
+    </div><!-- uneditable-input span3 ENDED-->
+      <span class="btn btn-file"><span class="fileupload-new">选择opml文件...</span>
+      <span class="fileupload-exists">更改文件..</span>
+      <input type="file" id="opmlfile" name="opmlfile"/></span>
+      <a href="#" class="btn fileupload-exists" data-dismiss="fileupload">移除..</a>
+      <button class="btn" ng-click="uploadfile()">提交文件</button>
+    </div>
   </div>
-</div>
+</form>
+ <table class="table table-striped">
+    <tr id="trToadd">
+    </tr> 
+</table>  
 </div><!--span12 END-->
 </div><!-- row-fluid END-->
 </div><!--container-fluid END -->
-
-
 </div><!-- End of ng controller end-->
 </body>
 </html>

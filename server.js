@@ -18,6 +18,14 @@ app.use(express.cookieParser('very secrect....'));
 app.get('/server.js',function(req,res){
 	res.send("???????");
 });
+app.get('/feeds.json',function(req,res){
+	res.send("???????");
+});
+app.get('/user.json',function(req,res){
+	res.send("???????");
+});
+
+
 
 
 app.use('/', express.static(__dirname + '/'));
@@ -95,6 +103,39 @@ var root={};
 	//		"url2":number
 	//}
 	root.unreaded={};
+
+var syncTofs=function(){
+
+  fs.writeFile('feeds.json', JSON.stringify(root.feeds), function (err) {
+      if (err) throw err;
+        console.log('feeds.json saved');
+  });
+  fs.writeFile('user.json', JSON.stringify(root.user), function (err) {
+      if (err) throw err;
+        console.log('users.json saved');
+  });
+},syncFromfs=function(){
+  fs.readFile('feeds.json', function (err, data) {
+      if (err) throw err;
+      console.log(data);
+      root.feeds=JSON.parse(data);
+  });
+  fs.readFile('user.json', function (err, data) {
+      if (err) throw err;
+      console.log(data);
+      root.users=JSON.parse(data);
+  });
+};
+
+//每半小时写一次数据库
+setInterval(function(){
+  syncTofs();
+},1000*60*30);
+
+//第一次启动预热后读取全局抓取列表和用户订阅列表...只有这两个数据重要...rss可以缓存后放在多个node中...
+setTimeout(function(){
+  syncFromfs();
+},1000*60*10);
 
 var initRss=function(result,parse_url){
 if(result&&result.rss&&result.rss.channel&&result.rss.channel[0]&&result.rss.channel[0].item&&result.rss.channel[0].item[0].title){
@@ -349,13 +390,113 @@ app.post('/readed', function (req, res) {
   	res.send(re);
   }//end of if no content in memory
 });//End of get /feedcontent...method
+
+
 //======================================================================
+//导入opml文件的处理过程...
+//
 app.post("/uploadopml",function(req,res){
 var username=req.signedCookies.db_username;
     console.log(username);
     console.log(req.files);
+
+if(!username){
+    res.send({error:"没有该用户？"});
+}
+// { opmlfile:
+//    { domain: null,
+//      _events: null,
+//      _maxListeners: 10,
+//      size: 44363,
+//      path: '/tmp/0b3300384c5cb49bcef1bb010792ffdf',
+//      name: 'subscriptions.xml',
+//      type: 'text/xml',
+//      hash: false,
+//      lastModifiedDate: Sun Mar 17 2013 17:36:10 GMT+0800 (CST),
+//      _writeStream:
+//       { domain: null,
+//         _events: null,
+//         _maxListeners: 10,
+//         path: '/tmp/0b3300384c5cb49bcef1bb010792ffdf',
+//         fd: 10,
+//         writable: false,
+//         flags: 'w',
+//         encoding: 'binary',
+//         mode: 438,
+//         bytesWritten: 44363,
+//         busy: false,
+//         _queue: [],
+//         _open: [Function],
+//         drainable: true },
+//      length: [Getter],
+//      filename: [Getter],
+//      mime: [Getter] } }
+  if(req.files.opmlfile){
+    var tmp_path=req.files.opmlfile.path;
+    if(req.files.opmlfile.type==="text/xml"){
+        gotOpmlFromAir(tmp_path,
+        function(feeds){
+            //如果成功则返回成功解析后的feeds即可.......
+            //客户端那边可能要修改成基于XMLHttpRequest2Ajax的了？否则不好弄啊。。。
+              //加到待加入列表里....
+            if(feeds){//如果闭包返回的feeds结果木问题的话.....
+              feeds.forEach(function(feed){
+                if(feed.xmlurl){//防御编程...
+                    if(root.feeds[feed.xmlurl]){//如果存在该条目，则将该条目简单添加到用户列表后即可
+                        root.user[username].feeds[feed.xmlurl]=root.feeds[feed.xmlurl];                      
+                    }else{//如果不存在该条目，那么就需要在全局抓取列表中添加该条目，抓取该条目，并添加订阅
+        	              root.feeds[feed.xmlurl]=feed.title;
+                        root.user[username].feeds[feed.xmlurl]=root.feeds[feed.xmlurl];
+                        var list=[];
+                        list.push(feed.xmlurl);
+                        syncFeed(list);
+                    }//END of 判断在全局抓取列表当中是否有该条目.....
+                }//END of 判断feed.xmlurl not null.....
+              });//END of forEach feed..............
+            }//END of 防止闭包返回的结果有问题....
+            res.send(feeds);
+        },function(){
+            //error is the closure var from the gotOpmlFromAir...
+            res.send({error:error});
+        });
+    }//else fork of isXML?
+    else{
+            res.send({error:"not a xml file..."});
+    }//END of isXML?
+  }//else fork of opmlfile exist?
+  else{
+            res.send({error:"file not exist..."});
+  }//End of opmlfile exist...
 });
 
+function gotOpmlFromAir(tmp_path,succ_cb,fail_cb){
+
+opmlparser.parseStream(fs.createReadStream(tmp_path),function(error,meta,feeds,outline){  
+  if (error){
+    if(fail_cb&&typeof fail_cb==="function"){
+              fail_cb();
+    }
+  	console.log(error);
+  }else {
+    console.log('OPML info');
+    console.log('%s - %s - %s', meta.title, meta.dateCreated, meta.ownerName);
+    console.log('Feeds');
+    //将读取到的opml赋予内存
+    //root.feeds=feeds;
+    feeds.forEach(function (feed){
+        console.log('%s - %s (%s)', feed.title, feed.htmlurl, feed.xmlurl);
+        //if(feed.xmlurl){
+        //	root.feeds[feed.xmlurl]=feed.title;
+        //}
+        //fetch_feed(feed.xmlurl);
+        //console.log(feed);
+    });//End of forEach feed
+    if(succ_cb&&typeof succ_cb==="function"){
+          succ_cb(feeds);
+    }
+  }//End of if error?
+});
+}//End of gotOpmlFromAir.......
 
 //读入OPML文件后的回调
 //第一步当然是读入opml后把所有的title都写到页面的左边去...
