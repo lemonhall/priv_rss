@@ -34,6 +34,17 @@ var root={};
 	//	   需要加一个引用技术系统，如果长时间没有用户订阅该URL，将其剔除
 	root.feeds={};
 
+  //用一种看上去很浪费，后患无穷的方式....
+  //单独去维护了一个feeds的抓取信息引用计数等等信息的表
+  //{
+  //    "xmlurl1":{
+  //              etag:"",
+  //              If-Last-Modified:"",
+  //              }
+  //
+  //}
+  root.feedsMeta={};
+
 	//rss表是维持抓取后内容的一个数据项
 	//{
 	//	"feed_url":{
@@ -182,16 +193,23 @@ var onParse=function(err,result,url1){
 function syncFeeds(url_list,callback){
 	url_list.forEach(function(url1){
 		//fetch_feed(feed.xmlurl);
-		request(url1, function (error, response, body) {
+
+var reqObj={};
+if(root.feedsMeta[url1]){
+  reqObj = {'uri': url1,'headers': {'If-None-Match' :root.feedsMeta[url1].etag}};
+}else{
+  reqObj = {'uri': url1};
+}
+		request(reqObj, function (error, response, body) {
 			if (!error && response.statusCode == 200) {
 			    //console.log(body) // Print the google web page.
 			    console.log("i am getting....:"+url1);
-			    var checkbody=typeof body;
+          var checkbody=typeof body;
 			    if(checkbody==="string"){
 				    	xml2js_parser(body,function(err,result){
 				    		onParse(err,result,url1);
-				    		if(callback){
-				    			callback();
+				    		if(callback&&typeof callback==="function"){
+				    			   callback(url1,response.headers);
 				    		}
 				    	});
 			    }//end of判断body是否为string的判断句
@@ -211,7 +229,13 @@ setInterval(function(){
 		url_list.push(urlkey);
 	  }//End of vaild xmlurl	
 	}
-	syncFeeds(url_list);
+  //每5分钟成功抓取时，就缓存最新的etag信息到内存中...
+	syncFeeds(url_list,function(xmlurl,headers){
+    if(headers.etag){
+      root.feedsMeta[xmlurl]={};
+      root.feedsMeta[xmlurl].etag=headers.etag;
+    }
+  });
 
 },1000*60*5);
 
@@ -325,6 +349,13 @@ app.post('/readed', function (req, res) {
   	res.send(re);
   }//end of if no content in memory
 });//End of get /feedcontent...method
+//======================================================================
+app.post("/uploadopml",function(req,res){
+var username=req.signedCookies.db_username;
+    console.log(username);
+    console.log(req.files);
+});
+
 
 //读入OPML文件后的回调
 //第一步当然是读入opml后把所有的title都写到页面的左边去...
@@ -465,7 +496,7 @@ if(access_token&&refresh_token){
               var header={'Authorization':'Bearer '+access_token};
               var shuo={
                   source:db_app_token.client_id,
-                  text:"分享自我的阅读器:http://126.am/bR8Z83",
+                  text:"分享自我的阅读器#lReader#:http://126.am/bR8Z83",
                   rec_title:"百度",
                   rec_url:"http://www.baidu.com",
                   rec_desc:"百度描述？",
