@@ -11,6 +11,8 @@ var xml2js_parser = require('xml2js').parseString;
 
 //这句很关键，没有它，POST解析就无法进行
 app.use(express.bodyParser({}));
+app.use(express.cookieParser('very secrect....'));
+
 
 //将三个重要文件屏蔽掉
 app.get('/server.js',function(req,res){
@@ -51,7 +53,10 @@ var root={};
 	//用户表.....
 	//{
 	//		"user_name":{
-	//					feeds:["url1","url2"],//用户所订阅的url的列表
+	//					feeds:{
+  //					    "url1":"title1",
+  //					    "url2":"title2"
+  //					},//用户所订阅的url的列表
 	//					unreaded:{
 	//						unreaded_title:["title1","title2"],
 	//						"url1":number,	
@@ -63,7 +68,7 @@ var root={};
 
 	//我自己咯，测试用户.....
 	var lemonhall={
-		"lemonhall2012@qq.com":{
+		"db_lemonhall2012":{
 						feeds:{
 								"http://www.36kr.com/feed":"36氪 | 关注互联网创业",
 								"http://cn.engadget.com/rss.xml":"Engadget 瘾科技"
@@ -210,12 +215,24 @@ setInterval(function(){
 
 },1000*60*5);
 
+//强迫用户登陆
+app.get('/',function(req,res){
+  var username=req.signedCookies.db_username;
+  if(username){
+    res.redirect("/index.html");
+  }else{
+    res.redirect("/signin.html");
+  }
+});
 
 //给客户端返回所有的feeds列表....
 //TODO:这里需要改造成多用户的系统....
 app.post('/feeds', function (req, res) {
   var username=req.body.username;
   //这里需要加强验证逻辑
+      username=req.signedCookies.db_username;
+      console.log(username);
+
   if(username){
   		res.send(JSON.stringify(root.user[username]));
 	}else{
@@ -230,6 +247,7 @@ app.post('/feeds', function (req, res) {
 app.post('/addFeed', function (req, res) {
 	var username=req.body.username;
 	var xmlurl=req.body.xmlurl;
+      username=req.signedCookies.db_username;
 	var re={};
 
 	if(username&&xmlurl){
@@ -346,26 +364,16 @@ setTimeout(function(){
 
 //====================================================================
 //豆瓣登陆处理逻辑....
-app.get('/callback/',function(req,res){
-         console.log(req.query);
-         res.send(JSON.stringify(req.query));
-         //var code=JSON.parse(req.query);
-         console.log(req.query.code);
-if(req.query.error){
-    	res.reditect("/");
-}//End of has a req.query.error??
 
+//{
+//    "user_uid":{
+//            access_token:"";
+//    }
+//}
 
-if(req.query.code){
-    	var data={
-			client_id		: '0bc6b936fe5d77e123542ba4fb1867a3',
-			client_secret	: '96ce1dffac124fe8',
-			redirect_uri	: 'http://test.wukong.com/callback',
- 			grant_type		: 'authorization_code',
- 			code 			:  req.query.code
-		};
-request.post('https://www.douban.com/service/auth2/token',{form:data}, function (e, r, body) {
-var err_message={
+root.douban={};
+
+var db_err_message={
 		100:'invalid_request_scheme 错误的请求协议',
 		101:'invalid_request_method 错误的请求方法',
 		102:'access_token_is_missing 未找到access_token',
@@ -395,12 +403,173 @@ var err_message={
 		999:'unknown 未知错误'
 };//End of error code table...
 
+//douban app token..
+var db_app_token={
+			client_id		  : '0bc6b936fe5d77e123542ba4fb1867a3',
+			client_secret	: '96ce1dffac124fe8',
+			redirect_uri	: 'http://test.wukong.com/callback',
+ 			grant_type		: 'authorization_code',
+ 			code 			    :  ''
+};
+
+
+var refreshDoubnKey=function(username,callback){
+  if(root.douban[username]){
+        var access_token=root.douban[username].access_token;
+        var refresh_token=root.douban[username].refresh_token;
+        if(access_token&&refresh_token){
+              console.log(access_token);
+            var request_arg=db_app_token;
+                request_arg.refresh_token=refresh_token;
+                request_arg.grant_type="refresh_token";
+
+              request.post('https://www.douban.com/service/auth2/token',{form:request_arg},
+              function (e, r, body) {
+              if(!e){
+                    	var body_jObject=JSON.parse(body);
+	                    //如果是有code则多半意味着失败了，则打印错误代码
+	                    //console.log(body_jObject);
+	                    if(body_jObject.code){
+		                      var code=body_jObject.code;
+		                      console.log(db_err_message[code]);
+                      }else{
+                      //{
+                      //  "access_token":"0e63c03dfb66c4172b2b40b9f2344c45",
+                      //  "expires_in":3920,
+                      //  "refresh_token":"84406d40cc58e0ae8cc147c2650aa20a",
+                      //  "douban_user_id":"1000"
+                      //}
+                      //如果没问题就更新access_token和refresh_token；
+                          root.douban[username].access_token=body_jObject.access_token;
+                          root.douban[username].refresh_token=body_jObject.refresh_token;
+                          if(callback &&typeof callback==="function"){
+                              callback();
+                          }
+                      }//End of body_jObject.code...not null or undefied...
+                    }//End of if(!e)
+              });//End of request....
+        }//End of access_token  && refresh_token exist.....
+  
+  }//End of username exist......
+};//ENd of refresh_token........
+
+var pushToDoubanShuo=function(username,shuo_fromUser,callback){
+
+
+if(root.douban[username]){
+        var access_token=root.douban[username].access_token;
+        var refresh_token=root.douban[username].refresh_token;
+if(access_token&&refresh_token){
+              console.log(access_token);
+//curl "https://api.douban.com/shuo/v2/statuses/" -H "Authorization: Bearer TOKEN"  -F "text=TestText"  -F "image=@upload.png"
+              var header={'Authorization':'Bearer '+access_token};
+              var shuo={
+                  source:db_app_token.client_id,
+                  text:"分享自我的阅读器:http://126.am/bR8Z83",
+                  rec_title:"百度",
+                  rec_url:"http://www.baidu.com",
+                  rec_desc:"百度描述？",
+                  rec_image:"http://www.baidu.com/img/shouye_b5486898c692066bd2cbaeda86d74448.gif"
+              };
+              shuo.rec_title  =shuo_fromUser.rec_title;
+              shuo.rec_url    =shuo_fromUser.rec_url;
+              shuo.rec_desc   =shuo_fromUser.rec_desc;
+              shuo.rec_image  =shuo_fromUser.rec_image;
+              shuo.text       =shuo_fromUser.text+"【"+shuo.text+"】";
+
+request.post('https://api.douban.com/shuo/v2/statuses/',{headers:header,form:shuo},function(e,r,body){
+              if(!e){
+                    	var body_jObject=JSON.parse(body);
+	                    //如果是有code则多半意味着失败了，则打印错误代码
+	                    //console.log(body_jObject);
+	                    if(body_jObject.code){
+		                      var code=body_jObject.code;
+		                      console.log(db_err_message[code]);
+                          //如果产生错误106，则更新access_token后，再尝试调用一次自己....
+                          if(code=='106'){
+                              refreshDoubnKey(username,function(){
+                                  pushToDoubanShuo(username,shuo_fromUser,callback);  
+                              });    
+                          }//End of access_token expire.....error--106
+                      }else{
+                        console.log(body_jObject);
+// http://www.douban.com/people/lemonhall2012/status/1116656390/
+// user:
+//    { screen_name: '柠檬',
+//      description: '',
+//      small_avatar: 'http://img3.douban.com/icon/u55895127-24.jpg',
+//      uid: 'lemonhall2012',
+//      type: 'user',
+//      id: '55895127',
+//      large_avatar: 'http://img3.douban.com/icon/ul55895127-24.jpg' },
+//   is_follow: false,
+//   has_photo: false,
+//   type: null,
+//   id: 1116656390 }
+                        var rec_usr    =body_jObject.user.uid;
+                        var rec_uuid   =body_jObject.id;
+                        var rec_url    ="";
+                        if(rec_usr&&rec_uuid){
+                          rec_url="http://www.douban.com/people/"+rec_usr+"/status/"+rec_uuid+"/";
+                          if(callback&&typeof callback==="function"){
+                            callback(rec_url);
+                          }
+                        }else{
+                        }
+                      
+                      }//End of respone's exist error code?
+                }else{
+                
+                }//End of esist error code?
+});//end of request to shuo 's API..
+}else{
+    
+}//end of if(access_token&&refreshDoubnKey)
+}//end of if(root.douban[username]).........
+};//End of push message to douban shuo... 
+
+//推荐到豆瓣....
+//
+app.post('/pushToDoubanShuo', function (req, res) {
+  var username=req.body.username;
+  var shuo=req.body.shuo;
+  //这里需要加强验证逻辑
+      username=req.signedCookies.db_username;
+      console.log(username);
+
+  if(root.douban[username]){
+      pushToDoubanShuo(username,shuo,function(rec_url){
+        res.send({message:"sucess rec",url:rec_url});
+      });
+  		//res.send(JSON.stringify(root.user[username]));
+	}else{
+		var re={error:"错误：没有该用户"};
+  		res.send(re);
+   }
+});//End of取得某用户订阅了的Rss的列表......
+
+
+    
+app.get('/callback/',function(req,res){
+
+    
+if(req.query.error){
+    	res.redirect("/");
+}//End of has a req.query.error??
+
+if(req.query.code){
+
+//从全局变量中复制app_token模版，并载入对应的code....
+var request_arg=db_app_token;
+    request_arg.code=req.query.code;
+
+request.post('https://www.douban.com/service/auth2/token',{form:request_arg}, function (e, r, body) {
 	var body_jObject=JSON.parse(body);
 	//如果是有code则多半意味着失败了，则打印错误代码
 	//console.log(body_jObject);
 	if(body_jObject.code){
 		var code=body_jObject.code;
-		console.log(err_message[code]);
+		console.log(db_err_message[code]);
 	}else{
 		//如果成功，则返回该用户的字符串
 		// {"access_token":"$!@#$!@#$!@#$!@#",
@@ -409,18 +578,39 @@ var err_message={
 		// "expires_in":604800,
 		// "refresh_token":"%!@#%!@!@#%!@%!%!@#%"}
           if(body_jObject.access_token){
- 			var access_token=body_jObject.access_token;
-                  console.log(access_token);
+ 			            var access_token=body_jObject.access_token;
+                      console.log(access_token);
             var header={'Authorization':'Bearer '+access_token};
             request.get('https://api.douban.com/v2/user/~me',{headers:header},
             function (e, r, body) {
             	if(!e){
+                    var jjBody_obj=JSON.parse(body);
                     console.log(body);
-                    res.send(body);
+                    //res.send(jjBody_obj.uid);
+                    if(jjBody_obj.uid){
+                      var uid="db_"+jjBody_obj.uid;
+                      console.log(uid);
+                      root.douban[uid]={};
+                      root.douban[uid].access_token=body_jObject.access_token;
+                      root.douban[uid].refresh_token=body_jObject.refresh_token;
+                      root.douban[uid].displayname=jjBody_obj.name;
+                      res.cookie('db_username',uid,{signed: true});
+                      console.log(root.douban[uid]);
+                      //将登陆的豆瓣用户和内存中的泛化用户表相关联...要注意判断是否已经存在....
+                      if(root.user[uid]){
+                      
+                      }else{
+                        root.user[uid]={};
+                        root.user[uid].feeds=[];
+                        root.user[uid].unreaded={};
+                      }
+                      res.redirect("/");
+                    }
                 }else{
-                	res.reditect("/");
+                	res.redirect("/");
                 }
             });//end of get user's profile which is a priv API -->
+          }//End of if(body_jObject.access_token){
 	}//End of has a code?   if(body_jObject.code){
 });//End of request.post('https://www.douban.com/service/auth2/token'
    //用code开始去换access_token去了.......		

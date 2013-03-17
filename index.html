@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="myApp">
 <head>
-<title>Rss Reader</title>
+<title>lemonReader</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,6 +26,13 @@ body{
 	padding: 9px 0;
 }
 
+#shareDoubanModal{
+  height:300px;
+}
+#shareDoubanModal .modal-body{
+
+  max-height:300px;
+}
 @media (max-width: 980px) {
 /* Enable use of floated navbar text */
 .main{
@@ -121,7 +128,7 @@ body{
       		<div class="accordion-inner" ng-bind-html="content[title].description[0]"></div>
     		<!--Begin of reshare-->
 		<div class="text-right" style="margin-right:10px;margin-bottom:10px;">
-			<a href="#"  ng-click="share_douban(title)">推荐到豆瓣</a>
+			<a href="#"  data-toggle="modal" data-target="#shareDoubanModal" ng-click="prepare_douban(title)">推荐到豆瓣</a>
 			<a href="#"  ng-click="share_weibo(title)">推荐到新浪</a>
 		</div>
 		<!--End of reshare-->
@@ -142,6 +149,30 @@ body{
 
 </div><!-- row-fluid END-->
 </div><!--container-fluid END -->
+
+<!-- Modal -->
+<div id="shareDoubanModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="dbModalLabel" aria-hidden="true">
+  <!-- Begin of modal-header-->
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="dbModalLabel">推荐到豆瓣</h3>
+  </div>
+  <!-- End of modal-header-->
+  
+  
+  <!--Begin of modal-body-->
+  <div class="modal-body" style="padding-left:20px">
+        <textarea style="width:93%" ng-model="rec_say" rows="3" placeholder="100..."></textarea>
+        <img class="img-polaroid" src="{{douban_shuo.rec_image}}" style="float:right;margin-left:12px;margin-right:22px;max-width:20%;">
+          <p class="muted">{{douban_shuo.rec_title}}</p>
+          <p class="muted" style="margin-left:20px;">{{douban_shuo.rec_url}}</p>
+  </div><!-- End of modal-body-->
+  <div class="modal-footer">
+        <a href="#" class="btn btn-success" ng-click="share_douban()">推荐</a>
+  </div>
+</div>
+<!-- End of Modal -->
+
 
 </div><!-- End of ng controller end-->
 <script type="text/javascript">

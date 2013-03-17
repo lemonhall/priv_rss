@@ -2,8 +2,10 @@ angular.module('myApp', ['ngSanitize']);
 
 function FeedsCtrl($scope,$http) { 
 
-  $scope.rss_content={};
+  $scope.content={};
   $scope.feedNeedbeAdded="";
+  $scope.douban_shuo={};
+  $scope.rec_say="";
 
   $scope.mainRight="<div class='hero-unit'><h1>Hello, world!</h1><p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p><p><a href='#' class='btn btn-primary btn-large'>Learn more &raquo;</a></p></div>";
 
@@ -21,10 +23,23 @@ function FeedsCtrl($scope,$http) {
       $http.post('/feeds',{username:username}).success(function(data) {
           if(data.feeds){
                 $scope.feeds = data.feeds;
+          }else{
+            if(data.error)handleNotlogin_error();
           }
       });//end of update $scope.feeds;
   };//End of 初始化页面.......
-
+  
+  
+  
+  var handleNotlogin_error=function(){
+  
+                 document.cookie = escape("db_username") + "=" + escape("") + "; path=/";  
+                location.href="/";
+  
+  
+  };
+  
+  
   //给当前用户加一个feed地址.....
   $scope.addFeed=function(){
       var url=$scope.feedNeedbeAdded;
@@ -40,6 +55,11 @@ function FeedsCtrl($scope,$http) {
                           $scope.feeds = data.feeds;
                           $scope.feedNeedbeAdded="";
                           $scope.loadFeed(url);
+                    }else{
+                      if(data.error){
+                          console.log(data);
+                          handleNotlogin_error();
+                      }
                     }
           });
       }else{
@@ -54,7 +74,11 @@ function FeedsCtrl($scope,$http) {
   $scope.loadFeed = function(xmlurl) {
       console.log(xmlurl);
       $http.post('/feedcontent',{xmlurl:xmlurl}).success(function(data) {
+            if(data.error){
+              console.log(data);
+            }else{  
               $scope.content = data;
+            }
       });
       
       $scope.mainRight="";
@@ -64,17 +88,49 @@ function FeedsCtrl($scope,$http) {
       // });//end of update $scope.feeds;
   };
 
+  //准备推荐给豆瓣的项目
+  $scope.prepare_douban=function(title){
+    console.log(title);
+    if($scope.content[title]){
+        var url=$scope.content[title].link[0];
+        var praser=$($scope.content[title].description[0]);
+        var img=praser.find("img");
+            console.log(img);
+            console.log(img[0].src);
+        var rec_img=img[0].src;
+        if(rec_img){
+      
+        }else{
+          rec_img="";
+       }
+        var shuo={
+            rec_title:title,
+            rec_url:url,
+            rec_desc:title,
+            rec_image:rec_img
+        };//End of prepare data....shuo....link to globel $scope.douban_shuo...
 
-  $scope.share_douban=function(title){
-	var url=$scope.content[title].link[0];
-	//var img_url=findUrlInDescripetion();
-	
-	if(url&&title){
-		var r='http://shuo.douban.com/!service/share?image=&href='+
-		      encodeURIComponent(url)+
-                      '&name='+encodeURIComponent(title);
-		window.open(r);
-	}
+        $scope.douban_shuo=shuo;
+        console.log($scope.douban_shuo);
+
+    }//防御式编程.....预防出错.....
+  };//END OF 准备给豆瓣的数据
+
+  $scope.share_douban=function(){
+      $scope.douban_shuo.text=$scope.rec_say.substring(0,100);; 
+      $http.post('/pushToDoubanShuo',{shuo:$scope.douban_shuo}).success(function(data) {
+      //console.log(shuo);  
+            if(data.error){
+                handleNotlogin_error();              
+            }
+            if(data.message==="sucess rec"){
+                console.log(data.url);
+                //window.open(data.url);
+                //location.href=data.url;
+                $('#shareDoubanModal').modal('hide');
+            }
+      });
+ 
 
   }//End of share to douban...
 
