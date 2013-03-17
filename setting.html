@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="myApp">
+<head>
+<title>lemonReader-设置</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+<style type="text/css">
+
+body{
+  overflow: hidden;
+}
+
+.main {
+	padding-top:60px;
+	padding-bottom: 40px;
+}
+
+.test {
+  max-height:600px;
+  overflow: hidden;
+  overflow-y: auto;
+}
+.sidebar-nav {
+	padding: 9px 0;
+}
+
+/*!
+ * Bootstrap v2.3.1-j6
+ *
+ * Copyright 2012 Twitter, Inc
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Designed and built with all the love in the world by @mdo and @fat, extended by @ArnoldDaniels.
+ */
+.clearfix {
+  *zoom: 1;
+}
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+  line-height: 0;
+}
+.clearfix:after {
+  clear: both;
+}
+.hide-text {
+  font: 0/0 a;
+  color: transparent;
+  text-shadow: none;
+  background-color: transparent;
+  border: 0;
+}
+.input-block-level {
+  display: block;
+  width: 100%;
+  min-height: 30px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.btn-file {
+  overflow: hidden;
+  position: relative;
+  vertical-align: middle;
+}
+.btn-file > input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  transform: translate(-300px, 0) scale(4);
+  font-size: 23px;
+  direction: ltr;
+  cursor: pointer;
+}
+.fileupload {
+  margin-bottom: 9px;
+}
+.fileupload .uneditable-input {
+  display: inline-block;
+  margin-bottom: 0px;
+  vertical-align: middle;
+  cursor: text;
+}
+.fileupload .thumbnail {
+  overflow: hidden;
+  display: inline-block;
+  margin-bottom: 5px;
+  vertical-align: middle;
+  text-align: center;
+}
+.fileupload .thumbnail > img {
+  display: inline-block;
+  vertical-align: middle;
+  max-height: 100%;
+}
+.fileupload .btn {
+  vertical-align: middle;
+}
+.fileupload-exists .fileupload-new,
+.fileupload-new .fileupload-exists {
+  display: none;
+}
+.fileupload-inline .fileupload-controls {
+  display: inline;
+}
+.fileupload-new .input-append .btn-file {
+  -webkit-border-radius: 0 3px 3px 0;
+  -moz-border-radius: 0 3px 3px 0;
+  border-radius: 0 3px 3px 0;
+}
+.thumbnail-borderless .thumbnail {
+  border: none;
+  padding: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+.fileupload-new.thumbnail-borderless .thumbnail {
+  border: 1px solid #ddd;
+}
+.control-group.warning .fileupload .uneditable-input {
+  color: #a47e3c;
+  border-color: #a47e3c;
+}
+.control-group.warning .fileupload .fileupload-preview {
+  color: #a47e3c;
+}
+.control-group.warning .fileupload .thumbnail {
+  border-color: #a47e3c;
+}
+.control-group.error .fileupload .uneditable-input {
+  color: #b94a48;
+  border-color: #b94a48;
+}
+.control-group.error .fileupload .fileupload-preview {
+  color: #b94a48;
+}
+.control-group.error .fileupload .thumbnail {
+  border-color: #b94a48;
+}
+.control-group.success .fileupload .uneditable-input {
+  color: #468847;
+  border-color: #468847;
+}
+.control-group.success .fileupload .fileupload-preview {
+  color: #468847;
+}
+.control-group.success .fileupload .thumbnail {
+  border-color: #468847;
+}
+
+@media (max-width: 980px) {
+/* Enable use of floated navbar text */
+.main{
+	padding-top:0px;
+
+}
+.navbar-text.pull-right {
+  float: none;
+  padding-left: 5px;
+  padding-right: 5px;
+ }
+}
+</style>
+</head>
+
+<body>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/bootstrap-fileupload.js"></script>
+    
+    <script src="settings.js"></script>
+    
+<!--使用SettingsCtrl-->
+<div ng-controller="SettingsCtrl">
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">我的阅读器</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="/">Home</a></li>
+              <li><a href="/settings.html">Settings</a></li>
+              <li><a href="/help.html">Help</a></li>
+              <li><a href="/contact.html">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div><!--/.nav-collapse  这个Nav bar是ROOT下的了 -->
+
+<div class="container-fluid main">
+<div class="row-fluid">
+<div class="span12">
+<div class="fileupload fileupload-new" data-provides="fileupload">
+  <div class="input-append">
+    <div class="uneditable-input span3"><i class="icon-file fileupload-exists"></i> <span class="fileupload-preview"></span></div><span class="btn btn-file"><span class="fileupload-new">选择opml文件...</span><span class="fileupload-exists">更改文件..</span><input type="file" /></span><a href="#" class="btn fileupload-exists" data-dismiss="fileupload">移除..</a>
+  </div>
+</div>
+</div><!--span12 END-->
+</div><!-- row-fluid END-->
+</div><!--container-fluid END -->
+
+
+</div><!-- End of ng controller end-->
+</body>
+</html>
