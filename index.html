@@ -18,7 +18,7 @@ body{
 }
 
 .test {
-  max-height:600px;
+  max-height:1024px;
   overflow: hidden;
   overflow-y: auto;
 }
@@ -67,7 +67,7 @@ body{
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="#">我的阅读器</a>
+          <a class="brand" href="/">我的阅读器</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li class="active"><a href="/">Home</a></li>
@@ -177,14 +177,10 @@ body{
 
 </div><!-- End of ng controller end-->
 <script type="text/javascript">
-	
-	$(document).ready(function(){
-		var mainRight=$("#mainRight");
-		console.log(mainRight);
-	});
-
-
-
+$(document).ready(function() {
+    var h=$(window).height();
+    $('.test').height(h-100+'px');
+});
 </script>
 </body>
 </html>

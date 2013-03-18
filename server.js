@@ -446,6 +446,7 @@ if(!username){
                         root.user[username].feeds[feed.xmlurl]=root.feeds[feed.xmlurl];                      
                     }else{//如果不存在该条目，那么就需要在全局抓取列表中添加该条目，抓取该条目，并添加订阅
         	              root.feeds[feed.xmlurl]=feed.title;
+                        root.user[username].feeds={};
                         root.user[username].feeds[feed.xmlurl]=root.feeds[feed.xmlurl];
                         var list=[];
                         list.push(feed.xmlurl);
