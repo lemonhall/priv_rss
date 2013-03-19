@@ -19,8 +19,7 @@ function FeedsCtrl($scope,$http) {
       //               }
       //   }
       // };
-      var username="lemonhall2012@qq.com";
-      $http.post('/feeds',{username:username}).success(function(data) {
+      $http.post('/feeds').success(function(data) {
           if(data.feeds){
                 $scope.feeds = data.feeds;
           }else{
@@ -32,11 +31,8 @@ function FeedsCtrl($scope,$http) {
   
   
   var handleNotlogin_error=function(){
-  
-                 document.cookie = escape("db_username") + "=" + escape("") + "; path=/";  
-                location.href="/";
-  
-  
+                document.cookie = escape("db_username") + "=" + escape("") + "; path=/";  
+                location.href="/signin.html";
   };
   
   

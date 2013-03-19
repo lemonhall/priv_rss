@@ -35,8 +35,12 @@ function SettingsCtrl($scope,$http) {
                               console.log(feed.title);
                               target.after("<tr><td>"+feed.title+"</td></tr>");
                           });
+                    }else{
+                        if(res.error==="Loginfail"){
+                          location.href="/signin.html";
+                        }
                     }
-            }
+            }//End fo status==200
          };
           /* Be sure to change the url below to the url of your upload server side script */
             xhr.open("POST", "/uploadopml");
